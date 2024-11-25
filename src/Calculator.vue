@@ -1,43 +1,25 @@
 <template>
-<div class="container mt-5">
-    <div class="card shadow-lg p-4">
-    <h1 class="text-center text-primary mb-4">Calculadora Aritmética</h1>
-    <div class="row g-3">
-        <!-- Primeiro número -->
-        <div class="col-md-4">
-        <input
-            type="number"
-            v-model.number="number1"
-            class="form-control"
-            placeholder="Digite o 1º número"
-        />
-        </div>
-
-        <!-- Operação -->
-        <div class="col-md-4">
-        <select v-model="operation" class="form-select">
-            <option value="+">Somar</option>
-            <option value="-">Subtrair</option>
-            <option value="*">Multiplicar</option>
-            <option value="/">Dividir</option>
-        </select>
-        </div>
-
-        <!-- Segundo número -->
-        <div class="col-md-4">
-        <input
-            type="number"
-            v-model.number="number2"
-            class="form-control"
-            placeholder="Digite o 2º número"
-        />
-        </div>
+<div class="calculator-container">
+    <!-- Display da calculadora -->
+    <div class="calculator-display">
+    {{ currentInput || result || "0" }}
     </div>
 
-    <hr class="my-4" />
+    <!-- Botões da calculadora -->
+    <div class="calculator-buttons">
+    <!-- Números -->
+    <button v-for="n in numbers" :key="n" @click="appendNumber(n)" class="btn btn-number">
+        {{ n }}
+    </button>
 
-    <!-- Resultado -->
-    <h2 class="text-center text-success">Resultado: {{ result }}</h2>
+    <!-- Operações -->
+    <button v-for="op in operations" :key="op" @click="selectOperation(op)" class="btn btn-operation">
+        {{ op }}
+    </button>
+
+    <!-- Funções especiais -->
+    <button @click="clear" class="btn btn-special">C</button>
+    <button @click="calculate" class="btn btn-equals">=</button>
     </div>
 </div>
 </template>
@@ -46,49 +28,131 @@
 export default {
 data() {
     return {
-    number1: 0,
-    number2: 0,
-    operation: '+',
+    currentInput: "", // Número sendo digitado
+    previousInput: null, // Número anterior
+    operation: null, // Operação selecionada
+    result: null, // Resultado final
     };
 },
 computed: {
-    result() {
-    switch (this.operation) {
-        case '+':
-        return this.number1 + this.number2;
-        case '-':
-        return this.number1 - this.number2;
-        case '*':
-        return this.number1 * this.number2;
-        case '/':
-        return this.number2 !== 0 ? this.number1 / this.number2 : 'Erro: Divisão por zero';
-        default:
-        return 'Operação inválida';
+    numbers() {
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+    },
+    operations() {
+    return ["+", "-", "*", "/"];
+    },
+},
+methods: {
+    appendNumber(num) {
+    if (this.currentInput.length < 10) {
+        this.currentInput += num;
     }
+    },
+    selectOperation(op) {
+    if (this.currentInput === "") return;
+    this.previousInput = this.currentInput;
+    this.operation = op;
+    this.currentInput = "";
+    },
+    calculate() {
+    const prev = parseFloat(this.previousInput);
+    const current = parseFloat(this.currentInput);
+
+    if (isNaN(prev) || isNaN(current)) return;
+
+    switch (this.operation) {
+        case "+":
+        this.result = prev + current;
+        break;
+        case "-":
+        this.result = prev - current;
+        break;
+        case "*":
+        this.result = prev * current;
+        break;
+        case "/":
+        this.result = current !== 0 ? prev / current : "Erro";
+        break;
+    }
+
+    this.previousInput = null;
+    this.operation = null;
+    this.currentInput = "";
+    },
+    clear() {
+    this.currentInput = "";
+    this.previousInput = null;
+    this.operation = null;
+    this.result = null;
     },
 },
 };
 </script>
 
 <style scoped>
-.card {
-max-width: 600px;
-margin: 0 auto;
+/* Estilo principal */
+.calculator-container {
+max-width: 300px;
+margin: 50px auto;
+background: #333;
 border-radius: 15px;
-background-color: #f8f9fa;
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+padding: 20px;
+text-align: center;
+color: white;
 }
 
-input,
-select {
-height: 50px;
-font-size: 18px;
+/* Display da calculadora */
+.calculator-display {
+background: #222;
+color: #0f0;
+font-size: 2rem;
+padding: 20px;
+margin-bottom: 20px;
+border-radius: 10px;
+text-align: right;
+box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-h1 {
-font-family: 'Roboto', sans-serif;
+/* Botões */
+.calculator-buttons {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 10px;
 }
 
-h2 {
-font-weight: bold;
+.btn {
+font-size: 1.2rem;
+padding: 15px;
+border: none;
+border-radius: 10px;
+cursor: pointer;
+}
+
+.btn-number {
+background: #555;
+color: white;
+}
+
+.btn-operation {
+background: #f39c12;
+color: white;
+}
+
+.btn-special {
+background: #e74c3c;
+color: white;
+}
+
+.btn-equals {
+background: #27ae60;
+color: white;
+grid-column: span 4;
+}
+
+/* Interação */
+.btn:active {
+transform: scale(0.95);
+box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
 }
 </style>
